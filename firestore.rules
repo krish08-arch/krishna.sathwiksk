@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isOfficial() {
+      return isSignedIn() && getUserData().role in ['official', 'admin'];
+    }
+
+    // --- Validation Helpers ---
+
+    function isValidReport(data) {
+      return data.userId == request.auth.uid 
+        && data.imageUrl is string && data.imageUrl.size() < 1000000 
+        && data.location.latitude is number && data.location.longitude is number
+        && data.city in ['Bangalore', 'Mysore']
+        && data.ward is string
+        && data.status in ['reported', 'analyzed']
+        && data.timestamp == request.time
+        && data.issueCategory is string
+        && data.severity in ['low', 'medium', 'high']
+        && (!('overallScore' in data) || (data.overallScore >= 0 && data.overallScore <= 100));
+    }
+
+    function isValidUser(data) {
+      return data.uid == request.auth.uid
+        && data.role in ['citizen', 'official'] // Support primary personas during prototype selection
+        && data.email == request.auth.token.email;
+    }
+
+    // --- Collection Rules ---
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isOfficial();
+      allow list: if isOfficial(); // Only officials can list users
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) 
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'city', 'trustScore', 'role'])
+          ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'city', 'trustScore'])
+        );
+    }
+
+    match /reports/{reportId} {
+      // Citizens can read all reports for transparency
+      allow get, list: if isSignedIn(); 
+      
+      allow create: if isSignedIn() && isValidReport(incoming());
+      
+      allow update: if isSignedIn() && (
+        // Official action: update status or verify
+        (isOfficial() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'department', 'clusterId', 'verifiedDate', 'verifiedBy', 'aiTags', 'severity', 'overallScore', 'categoryScores']))
+        ||
+        // Author action: minor edits or confirmation
+        (isOwner(existing().userId) && existing().status == 'reported' && incoming().diff(existing()).affectedKeys().hasOnly(['issueCategory', 'streetName']))
+      );
+
+      allow delete: if isOfficial() || (isSignedIn() && isOwner(existing().userId));
+    }
+
+    match /wards/{wardId} {
+      allow read: if isSignedIn();
+      allow write: if isOfficial();
+    }
+  }
+}

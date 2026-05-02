@@ -1,0 +1,86 @@
+{
+  "entities": {
+    "Report": {
+      "title": "Citizen Street Report",
+      "description": "An individual submission from a citizen reporting a street issue.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" }
+          }
+        },
+        "city": { "type": "string", "enum": ["Bangalore", "Mysore"] },
+        "ward": { "type": "string" },
+        "streetName": { "type": "string" },
+        "issueCategory": { "type": "string" },
+        "aiTags": { "type": "array", "items": { "type": "string" } },
+        "aiConfidence": { "type": "number" },
+        "severity": { "type": "string", "enum": ["low", "medium", "high"] },
+        "overallScore": { "type": "number" },
+        "categoryScores": {
+          "type": "object",
+          "properties": {
+            "walkability": { "type": "number" },
+            "safety": { "type": "number" },
+            "accessibility": { "type": "number" },
+            "comfort": { "type": "number" },
+            "edgeQuality": { "type": "number" },
+            "greenAccess": { "type": "number" },
+            "realmHealth": { "type": "number" }
+          }
+        },
+        "status": { "type": "string", "enum": ["reported", "verified", "assigned", "in-progress", "resolved", "closed"] },
+        "department": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "clusterId": { "type": "string" }
+      },
+      "required": ["userId", "imageUrl", "location", "city", "status", "timestamp"]
+    },
+    "User": {
+       "title": "User Profile",
+       "description": "User profile information and role.",
+       "type": "object",
+       "properties": {
+         "uid": { "type": "string" },
+         "displayName": { "type": "string" },
+         "email": { "type": "string" },
+         "role": { "type": "string", "enum": ["citizen", "official", "admin"] },
+         "city": { "type": "string" },
+         "trustScore": { "type": "number" }
+       },
+       "required": ["uid", "email", "role"]
+    },
+    "WardStats": {
+      "title": "Ward Level Statistics",
+      "description": "Aggregated intelligence at the ward level.",
+      "type": "object",
+      "properties": {
+        "wardName": { "type": "string" },
+        "city": { "type": "string" },
+        "averageScore": { "type": "number" },
+        "reportCount": { "type": "number" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/reports/{reportId}": {
+      "schema": "Report",
+      "description": "Collection of all street reports."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and permissions."
+    },
+    "/wards/{wardId}": {
+      "schema": "WardStats",
+      "description": "Aggregated data for spatial mapping and comparison."
+    }
+  }
+}

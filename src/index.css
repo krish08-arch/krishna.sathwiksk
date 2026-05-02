@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --color-civic-dark: #0F172A;
+  --color-civic-ink: #1E293B;
+  --color-civic-accent: #F59E0B; /* Amber/Yellow for Indian street context */
+  --color-civic-border: #E2E8F0;
+  
+  --color-safety: #Ef4444;
+  --color-urban-gray: #64748B;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-slate-900 font-sans antialiased;
+  }
+}
+
+/* Technical Dashboard Styles */
+.visible-grid {
+  background-image: linear-gradient(var(--color-civic-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-civic-border) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.civic-border {
+  @apply border border-slate-900;
+}
+
+.civic-shadow {
+  box-shadow: 4px 4px 0px 0px rgba(15, 23, 42, 1);
+}
+
+.mono-label {
+  @apply font-mono text-[12px] uppercase tracking-wider opacity-60 font-semibold;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom Marker Styles */
+.marker-cluster-small { background-color: rgba(245, 158, 11, 0.6); }
+.marker-cluster-medium { background-color: rgba(249, 115, 22, 0.6); }
+.marker-cluster-large { background-color: rgba(239, 68, 68, 0.6); }
+
+

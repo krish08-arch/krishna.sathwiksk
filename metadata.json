@@ -1,0 +1,6 @@
+{
+  "name": "ನಮ್ಮ OORU",
+  "description": "Namma Ooru: A civic-tech intelligence platform for Bangalore and Mysore. Bridging citizens and governance through AI-assisted street analytics.",
+  "requestFramePermissions": ["camera", "geolocation"],
+  "majorCapabilities": ["AI-powered street analysis", "Interactive neighborhood maps", "Government action dashboard"]
+}
